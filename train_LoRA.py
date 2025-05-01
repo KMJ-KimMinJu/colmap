@@ -972,7 +972,7 @@ if __name__ == "__main__":
 
 
 
-
+# 테스트 실행
 # !accelerate launch "/content/drive/MyDrive/Colab Notebooks/train_text_to_image_lora.py"\
 # --pretrained_model_name_or_path="runwayml/stable-diffusion-v1-5"\
 # --train_data_dir="/content/drive/MyDrive/Colab Notebooks/my_dataset"\
@@ -991,3 +991,41 @@ if __name__ == "__main__":
 # --num_validation_images=2\
 # --rank=8\
 # --snr_gamma=5.0
+
+
+
+
+
+
+# 결과 도출 코드
+from diffusers import StableDiffusionPipeline
+import torch
+from PIL import Image
+import os
+
+# 모델 로딩
+pipe = StableDiffusionPipeline.from_pretrained(
+    "runwayml/stable-diffusion-v1-5",
+    torch_dtype=torch.float16
+).to("cuda")
+
+pipe.load_lora_weights("/content/drive/MyDrive/Colab Notebooks/lora_output_test/checkpoint-1000")
+
+# 프롬프트 설정
+prompt = "a photo of a 3-way stopcock manifold left side, realistic"
+
+# 생성
+output = pipe(prompt, num_inference_steps=500,height=512, width=512)
+
+# 이미지 뽑기
+image = output.images[0]
+
+# 저장 폴더 지정
+save_path = "/content/drive/MyDrive/Colab Notebooks/test_output"
+os.makedirs(save_path, exist_ok=True)
+
+# 이미지 저장
+image.save(os.path.join(save_path, "test_lora_result.png"))
+
+print("✅ 저장 완료!")
+
